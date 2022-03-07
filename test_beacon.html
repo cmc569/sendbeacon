@@ -1,0 +1,200 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>auto-redirect</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+
+    <style>
+        img {
+            max-width: 100%;
+            vertical-align: middle;
+            border-style: none;
+        }
+
+        .main_box {
+            max-width: 414px;
+            height: 100vh;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .notice {
+            position: absolute;
+            width: 100%;
+            padding: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+<script src="https://cdn.jsdelivr.net/npm/vconsole@3.2.0/dist/vconsole.min.js"></script>
+
+<link rel="shortcut icon" href="#"/>
+<script src="assets/jquery/jquery.min.js"></script>
+<script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+<script>
+    var apiURL = 'https://api-tf.accunix.net';
+    var saveLogsUrl = apiURL + '/api/system/saveLogs';
+    var closeNoticeImg = 'images/close_notice.png';
+    var loadingImg = 'images/loading.png';
+    var strUrl = location.search;
+    var getPara;
+    var user = {};
+    var params = {};
+
+    if (strUrl.indexOf("?") != -1) {
+        var getSearch = strUrl.split("?");
+        getPara = getSearch[1].split("&");
+        for (i = 0; i < getPara.length; i++) {
+            param = getPara[i].split("=");
+            key = param[0];
+            value = param[1];
+            switch (key) {
+                case 'Pid':
+                    (value) ? params['Pid'] = value : null;
+                    break;
+                case 'AccuTK':
+                    (value) ? params['userToken'] = value : null;
+                    break;
+                case 'user_token':
+                    (value) ? params['userToken'] = value : null;
+                    break;
+                case 'tags':
+                    if (value) {
+                        try {
+                            params['tags'] = JSON.parse(unescape(value));
+                        } catch (e) {
+
+                        }
+                    }
+                    break;
+                case 'SUid':
+                    (value) ? params['SUid'] = value : null;
+                    break;
+                case 'GUID':
+                    (value) ? params['GUID'] = value : null;
+                    break;
+                case 'liffId':
+                    (value) ? params['liffId'] = value : null;
+
+                    if(params['liffId'] == '1653895455-krwxRXAN'){
+                        var vConsole = new VConsole();
+                    }
+                    break;
+                case 'url':
+                    value = unescape(value);
+                    value = value.replace('~', '?');
+                    value = value.replace(new RegExp('\\*', 'g'), '=');
+                    value = value.replace(new RegExp('\\\'', 'g'), '&');
+                    (value) ? params['redirectUrl'] = value : null;
+                    break;
+                case 'send_messages_url':
+                    value = unescape(value);
+                    // 打 API
+                    if (value) {
+                        value = value.replace('~', '?');
+                        value = value.replace(new RegExp('\\*', 'g'), '=');
+                        value = value.replace(new RegExp('\\\'', 'g'), '&');
+                        getMessageData(value);
+                    }
+
+                    break;
+                default:
+                    (value) ? params[key] = value : null;
+                    break
+            }
+        }
+        console.log(JSON.stringify(params));
+    }
+
+    joinUser(params['GUID'], params['userToken'], params['SUid']);
+    addUserTag(params['GUID'], params['userToken'], params['tags']);
+    getShareLink(params['GUID'], params['userToken']);
+
+    function getMessageData(send_messages_url) {
+        $.ajax({
+            url: send_messages_url,
+            async:false,
+            type: "GET",
+            success(result, status, xhr) {
+                params['sendMessageData'] = JSON.parse(result);
+            },
+            error(xhr, status, error) {
+                console.log(error);
+                console.log(status);
+                console.log(xhr);
+            }
+        });
+    }
+
+    function getShareLink(GUID, userToken) {
+        var data = new FormData();
+        data.append('sharer_token', userToken);
+        
+        url: apiURL + '/api/LINEBot/' + GUID + '/users/getShareLink',
+        navigator.sendBeacon(url, data);
+        <!-- $.ajax({ -->
+            <!-- url: apiURL + '/api/LINEBot/' + GUID + '/users/getShareLink', -->
+            <!-- type: "POST", -->
+            <!-- async:false, -->
+            <!-- data: { -->
+                <!-- sharer_token: userToken, -->
+            <!-- }, -->
+            <!-- success(result, status, xhr) { -->
+                <!-- params['redirectUrl'] = result.message; -->
+            <!-- }, -->
+            <!-- error(xhr, status, error) { -->
+
+            <!-- } -->
+        <!-- }); -->
+    }
+
+    // 透過分享連結加入好友
+    function joinUser(GUID, userToken, SUid) {
+        console.log('joinUser');
+        
+        var data = new FormData();
+        data.append('joiner_token', userToken);
+        data.append('SUid', SUid);
+        
+        url: apiURL + '/api/LINEBot/' + GUID + '/users/joinUser',
+        navigator.sendBeacon(url, data);
+        
+        <!-- $.ajax({ -->
+            <!-- url: apiURL + '/api/LINEBot/' + GUID + '/users/joinUser', -->
+            <!-- type: "POST", -->
+            <!-- async:false, -->
+            <!-- data: { -->
+                <!-- joiner_token: userToken, -->
+                <!-- SUid: SUid -->
+            <!-- }, -->
+        <!-- }); -->
+    }
+
+    // 貼標
+    function addUserTag(GUID, userToken, tags) {
+        console.log('addUserTag');
+        
+        var data = new FormData();
+        data.append('user_token', [userToken]);
+        data.append('tags', tags);
+        
+        url: apiURL + '/api/LINEBot/' + GUID + '/users/addUsersTag',
+        navigator.sendBeacon(url, data);
+        
+        <!-- $.ajax({ -->
+            <!-- url: apiURL + '/api/LINEBot/' + GUID + '/users/addUsersTag', -->
+            <!-- type: "POST", -->
+            <!-- async:false, -->
+            <!-- data: { -->
+                <!-- user_token: [userToken], -->
+                <!-- tags: tags -->
+            <!-- }, -->
+        <!-- }); -->
+    }
+
+</script>
+
+</html>

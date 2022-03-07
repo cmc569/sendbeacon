@@ -1,0 +1,45 @@
+navigator.sendBeacon(url, data);
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>auto-redirect</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+
+    <style>
+        img {
+            max-width: 100%;
+            vertical-align: middle;
+            border-style: none;
+        }
+
+        .main_box {
+            max-width: 414px;
+            height: 100vh;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .notice {
+            position: absolute;
+            width: 100%;
+            padding: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+<script src="https://cdn.jsdelivr.net/npm/vconsole@3.2.0/dist/vconsole.min.js"></script>
+<!-- <script src="https://code.jquery.com/jquery-3.4.1.js"></script> -->
+<link rel="shortcut icon" href="#"/>
+<script src="assets/jquery/jquery.min.js"></script>
+<script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+<script>
+var data = new FormData();
+        data.append('joiner_token', 'UUUU');
+        data.append('SUid', 'SSSSSS');
+navigator.sendBeacon('a.php', data);
+</script>
+
+</html>
